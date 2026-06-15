@@ -1,0 +1,79 @@
+backend:
+  name: github
+  repo: axrl-ch/chronoshub-pptx
+  branch: main
+  base_url: https://chronoshub-pptx-git-main-axrl-chs-projects.vercel.app
+  auth_endpoint: /api/auth
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: skills
+    label: Skills
+    label_singular: Skill
+    folder: skills
+    path: "{{slug}}/SKILL"
+    extension: md
+    create: true
+    format: frontmatter
+    summary: "{{name}}"
+    fields:
+      - label: Name
+        name: name
+        widget: string
+        hint: "Identifier for the skill (e.g. chronoshub-pptx)"
+      - label: Description
+        name: description
+        widget: text
+        hint: "When should Claude use this skill? Be specific — this is what triggers it."
+      - label: License
+        name: license
+        widget: string
+        required: false
+        hint: "Optional. e.g. MIT, Proprietary"
+      - label: Content
+        name: body
+        widget: markdown
+        hint: "The full skill instructions in markdown."
+
+  - name: connectors
+    label: Connectors
+    label_singular: Connector
+    folder: connectors
+    extension: yml
+    create: true
+    format: yaml
+    summary: "{{name}}"
+    fields:
+      - label: Name
+        name: name
+        widget: string
+        hint: "Display name for the connector (e.g. Slack, Notion)"
+      - label: Description
+        name: description
+        widget: text
+        hint: "What does this connector do?"
+      - label: Type
+        name: type
+        widget: select
+        options:
+          - { label: "npm package", value: npm }
+          - { label: "Docker image", value: docker }
+          - { label: "Node script", value: node }
+      - label: Package / Image
+        name: package
+        widget: string
+        hint: "npm package name or Docker image (e.g. @modelcontextprotocol/server-slack)"
+      - label: Environment Variables
+        name: env
+        widget: list
+        required: false
+        summary: "{{fields.key}}"
+        fields:
+          - { label: Key, name: key, widget: string }
+          - { label: Description, name: description, widget: string }
+          - label: Required
+            name: required
+            widget: boolean
+            default: true
