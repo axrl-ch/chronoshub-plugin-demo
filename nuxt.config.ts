@@ -4,8 +4,11 @@ export default defineNuxtConfig({
     'nuxt-studio'
   ],
 
+  nitro: {
+    preset: 'vercel'
+  },
+
   studio: {
-    // Studio will be at /admin instead of the default /_studio
     route: '/admin',
     git: {
       commit: {
@@ -14,12 +17,7 @@ export default defineNuxtConfig({
     }
   },
 
-  content: {
-    // Skills and connectors live in content/
-  },
-
-  // Vercel auto-detects git provider, but set explicitly as fallback
-  // studio.repository is auto-populated from VERCEL_GIT_* env vars
+  content: {},
 
   compatibilityDate: '2025-01-01'
 })
