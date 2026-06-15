@@ -4,6 +4,10 @@ export default defineNuxtConfig({
     'nuxt-studio'
   ],
 
+  nitro: {
+    preset: 'vercel'
+  },
+
   studio: {
     route: '/admin',
     git: {
