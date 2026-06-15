@@ -1,0 +1,16 @@
+{
+  "name": "chronoshub-plugin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@nuxt/content": "^3.5.0",
+    "nuxt": "^3.16.0",
+    "nuxt-studio": "^1.0.0"
+  }
+}
