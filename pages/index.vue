@@ -16,13 +16,21 @@
         v-for="skill in skills"
         :key="skill.slug"
         :href="`/studio/edit-skill/${skill.slug}`"
-        style="border:1px solid #e5e5e5; border-radius:8px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; text-decoration:none; color:inherit; transition:border-color 0.15s;"
-        @mouseenter="e => e.currentTarget.style.borderColor='#aaa'"
-        @mouseleave="e => e.currentTarget.style.borderColor='#e5e5e5'"
+        class="skill-card"
       >
-        <div>
-          <div style="font-weight:600; font-size:1.09rem; margin-bottom:0.2rem;">{{ skill.name }}</div>
-          <div style="font-size:0.95rem; color:#666; max-width:520px;">{{ skill.description }}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="skill-name">{{ skill.name }}</div>
+          <div
+            class="skill-desc"
+            :class="{ expanded: expandedDesc[skill.slug] }"
+          >{{ skill.description }}</div>
+          <button
+            v-if="skill.description && skill.description.length > 120"
+            class="desc-toggle"
+            @click.prevent.stop="expandedDesc[skill.slug] = !expandedDesc[skill.slug]"
+          >
+            {{ expandedDesc[skill.slug] ? 'Show less ▲' : 'Show more ▼' }}
+          </button>
         </div>
         <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem;">
           <code style="font-size:0.86rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ skill.slug }}</code>
@@ -32,6 +40,52 @@
     </div>
   </main>
 </template>
+
+<style>
+.skill-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.skill-card:hover { border-color: #aaa; }
+.skill-name {
+  font-weight: 600;
+  font-size: 1.09rem;
+  margin-bottom: 0.2rem;
+}
+.skill-card:hover .skill-name { text-decoration: underline; }
+.skill-desc {
+  font-size: 0.95rem;
+  color: #666;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.skill-desc.expanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+.desc-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: #999;
+  cursor: pointer;
+  display: block;
+}
+.desc-toggle:hover { color: #444; }
+</style>
 
 <script setup>
 const skillFiles = import.meta.glob('~/skills/**/SKILL.md', { as: 'raw', eager: true })
@@ -59,4 +113,5 @@ const skills = Object.entries(skillFiles)
   .filter(s => s.slug)
   .sort((a, b) => a.name.localeCompare(b.name))
 
+const expandedDesc = reactive({})
 </script>
