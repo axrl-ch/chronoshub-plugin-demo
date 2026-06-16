@@ -12,6 +12,7 @@
     "@nuxt/content": "^3.5.0",
     "better-sqlite3": "^12.5.0",
     "nuxt": "^3.16.0",
-    "nuxt-studio": "^1.0.0"
+    "nuxt-studio": "^1.0.0",
+    "adm-zip": "^0.5.16"
   }
 }
