@@ -43,12 +43,17 @@
 </template>
 
 <style>
-.skill-body h1 { display: none; } /* hide the # SkillName heading — redundant with card header */
-.skill-body h2 { font-size: 1rem; font-weight: 700; margin: 1.25rem 0 0.4rem; }
-.skill-body h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.3rem; }
+.skill-body h1 { display: none; }
+.skill-body h2 { font-size: 1rem; font-weight: 700; margin: 1.25rem 0 0.4rem; color: #1a1a1a; }
+.skill-body h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.3rem; color: #1a1a1a; }
+/* strip anchor links from headings */
+.skill-body h1 a, .skill-body h2 a, .skill-body h3 a, .skill-body h4 a {
+  color: inherit; text-decoration: none; pointer-events: none; cursor: default;
+}
 .skill-body p { font-size: 0.875rem; color: #444; margin: 0 0 0.6rem; line-height: 1.6; }
-.skill-body pre { background: #1a1a1a; color: #e5e5e5; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.8rem; overflow-x: auto; margin: 0.5rem 0 0.75rem; }
-.skill-body code:not(pre code) { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
+.skill-body pre { background: #f5f5f5; color: #1a1a1a; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.8rem; overflow-x: auto; margin: 0.5rem 0 0.75rem; border: 1px solid #e5e5e5; }
+.skill-body pre code { background: none; padding: 0; color: inherit; }
+.skill-body code:not(pre code) { background: #ebebeb; color: #1a1a1a; padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
 .skill-body ul, .skill-body ol { font-size: 0.875rem; color: #444; padding-left: 1.25rem; margin: 0 0 0.6rem; }
 .skill-body li { margin-bottom: 0.2rem; line-height: 1.5; }
 .skill-body table { font-size: 0.8rem; border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
