@@ -8,29 +8,27 @@
       </div>
     </div>
 
-    <!-- Skills list -->
-    <div v-if="pending" style="color:#888; font-size:0.9rem;">Loading skills…</div>
-    <pre v-if="data?.debug" style="font-size:0.75rem; background:#f5f5f5; padding:1rem; border-radius:6px; overflow:auto;">{{ JSON.stringify(data.debug, null, 2) }}</pre>
-    <div v-else-if="skills.length === 0" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
+    <div v-if="!skills?.length" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
     <div v-else style="display:flex; flex-direction:column; gap:0.75rem;">
       <div
         v-for="skill in skills"
-        :key="skill.slug"
+        :key="skill.name"
         style="border:1px solid #e5e5e5; border-radius:8px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center;"
       >
         <div>
-          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.name }}</div>
+          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.title || skill.name }}</div>
           <div style="font-size:0.825rem; color:#666; max-width:520px;">{{ skill.description }}</div>
         </div>
-        <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px; white-space:nowrap; margin-left:1rem;">{{ skill.slug }}</code>
+        <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px; white-space:nowrap; margin-left:1rem;">{{ skill.name }}</code>
       </div>
     </div>
   </main>
 </template>
 
 <script setup>
-const { data, pending } = await useLazyFetch('/api/skills/list')
-const skills = computed(() => data.value?.skills || [])
+const { data: skills } = await useAsyncData('skills',
+  () => queryCollection('skills').order('title', 'ASC').all()
+)
 </script>
