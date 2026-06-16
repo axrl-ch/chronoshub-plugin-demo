@@ -1,16 +1,17 @@
 ---
 name: another-test
 description: >
-  don't, it's a test
+  just another test
 ---
 
 # another test
 
-#Heading test
+# Heading test
 
-'''bash
-var = test
-'''
+```bash
+var = codeTest
+```
 
 ---
+
 did it work?
