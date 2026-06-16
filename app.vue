@@ -14,7 +14,6 @@
 <script setup>
 const isDark = ref(true)
 const returnUrl = ref('')
-const route = useRoute()
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
@@ -41,9 +40,9 @@ function toggleTheme() {
 }
 
 function openAuth() {
-  // Save where we are so we can show a Return button after auth
-  localStorage.setItem('_auth_return_url', route.fullPath)
-  returnUrl.value = route.fullPath
+  const currentPath = window.location.pathname + window.location.search
+  localStorage.setItem('_auth_return_url', currentPath)
+  returnUrl.value = currentPath
   // Trigger form save event so pages can persist their draft
   window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
   window.location.href = '/admin'
