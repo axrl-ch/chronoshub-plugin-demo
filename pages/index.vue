@@ -12,54 +12,26 @@
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
     <div v-else style="display:flex; flex-direction:column; gap:0.75rem;">
-      <div
+      <a
         v-for="skill in skills"
         :key="skill.slug"
-        style="border:1px solid #e5e5e5; border-radius:8px; overflow:hidden;"
+        :href="`/studio/edit-skill/${skill.slug}`"
+        style="border:1px solid #e5e5e5; border-radius:8px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; text-decoration:none; color:inherit; transition:border-color 0.15s;"
+        @mouseenter="e => e.currentTarget.style.borderColor='#aaa'"
+        @mouseleave="e => e.currentTarget.style.borderColor='#e5e5e5'"
       >
-        <!-- Header row — click to expand -->
-        <div
-          @click="toggle(skill.slug)"
-          style="padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;"
-          :style="expanded[skill.slug] ? 'border-bottom:1px solid #e5e5e5;' : ''"
-        >
-          <div>
-            <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.name }}</div>
-            <div style="font-size:0.825rem; color:#666; max-width:520px;">{{ skill.description }}</div>
-          </div>
-          <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem;">
-            <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ skill.slug }}</code>
-            <span style="font-size:0.75rem; color:#bbb;">{{ expanded[skill.slug] ? '▲' : '▼' }}</span>
-          </div>
+        <div>
+          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.name }}</div>
+          <div style="font-size:0.825rem; color:#666; max-width:520px;">{{ skill.description }}</div>
         </div>
-
-        <!-- Expanded markdown body -->
-        <div v-if="expanded[skill.slug]" style="padding:1.25rem 1.5rem; background:#fafafa;">
-          <MDC :value="skill.body" tag="article" class="skill-body" />
+        <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem;">
+          <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ skill.slug }}</code>
+          <span style="font-size:0.75rem; color:#bbb;">›</span>
         </div>
-      </div>
+      </a>
     </div>
   </main>
 </template>
-
-<style>
-.skill-body h1 { display: none; }
-.skill-body h2 { font-size: 1rem; font-weight: 700; margin: 1.25rem 0 0.4rem; color: #1a1a1a; }
-.skill-body h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.3rem; color: #1a1a1a; }
-/* strip anchor links from headings */
-.skill-body h1 a, .skill-body h2 a, .skill-body h3 a, .skill-body h4 a {
-  color: inherit; text-decoration: none; pointer-events: none; cursor: default;
-}
-.skill-body p { font-size: 0.875rem; color: #444; margin: 0 0 0.6rem; line-height: 1.6; }
-.skill-body pre { background: #f5f5f5; color: #1a1a1a; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.8rem; overflow-x: auto; margin: 0.5rem 0 0.75rem; border: 1px solid #e5e5e5; }
-.skill-body pre code { background: none; padding: 0; color: inherit; }
-.skill-body code:not(pre code) { background: #ebebeb; color: #1a1a1a; padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
-.skill-body ul, .skill-body ol { font-size: 0.875rem; color: #444; padding-left: 1.25rem; margin: 0 0 0.6rem; }
-.skill-body li { margin-bottom: 0.2rem; line-height: 1.5; }
-.skill-body table { font-size: 0.8rem; border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
-.skill-body th, .skill-body td { border: 1px solid #e5e5e5; padding: 0.4rem 0.6rem; text-align: left; }
-.skill-body th { background: #f5f5f5; font-weight: 600; }
-</style>
 
 <script setup>
 const skillFiles = import.meta.glob('~/skills/**/SKILL.md', { as: 'raw', eager: true })
@@ -87,8 +59,4 @@ const skills = Object.entries(skillFiles)
   .filter(s => s.slug)
   .sort((a, b) => a.name.localeCompare(b.name))
 
-const expanded = reactive({})
-function toggle(slug) {
-  expanded[slug] = !expanded[slug]
-}
 </script>
