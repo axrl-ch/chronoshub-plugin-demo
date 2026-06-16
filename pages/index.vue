@@ -22,7 +22,7 @@
           <div class="skill-name">{{ skill.name }}</div>
           <div class="skill-desc" :class="{ expanded: expandedDesc[skill.slug] }">{{ skill.description }}</div>
         </div>
-        <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem; align-self:center;">
           <a
             :href="`/studio/edit-skill/${skill.slug}`"
             class="edit-btn"
@@ -41,7 +41,7 @@
   padding: 1rem 1.25rem;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   cursor: pointer;
   transition: border-color 0.15s;
 }
