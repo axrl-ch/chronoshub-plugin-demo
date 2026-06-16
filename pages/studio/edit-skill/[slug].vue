@@ -1,105 +1,64 @@
 <template>
-  <main style="max-width:680px; margin:0 auto; padding:2rem; font-family:system-ui,sans-serif;">
-    <nav style="margin-bottom:1.5rem; font-size:0.875rem; color:#666;">
-      <a href="/" style="color:#666; text-decoration:none;">Home</a> / Edit skill
+  <main class="page">
+    <nav class="page-nav">
+      <a href="/">Home</a> / Edit skill
     </nav>
 
-    <div v-if="!skill" style="color:#888; padding:2rem 0; text-align:center;">
+    <div v-if="!skill" style="color:var(--text-subtle); padding:2rem 0; text-align:center;">
       Skill <code>{{ route.params.slug }}</code> not found.
-      <br><a href="/" style="color:#1a1a1a;">← Back</a>
+      <br><a href="/" style="color:var(--text);">← Back</a>
     </div>
 
     <template v-else>
-      <h1 style="font-size:1.5rem; font-weight:700; margin:0 0 0.25rem;">Edit skill</h1>
-      <p style="color:#555; margin:0 0 2rem;">Changes are committed directly to the repository.</p>
+      <h1 class="page-title">Edit skill</h1>
+      <p class="page-subtitle">Changes are committed directly to the repository.</p>
 
       <form @submit.prevent="submitForm">
-        <div style="margin-bottom:1.25rem;">
-          <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Skill name</label>
-          <input
-            v-model="form.name"
-            required
-            style="width:100%; padding:0.6rem 0.75rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem; box-sizing:border-box;"
-          />
-          <p style="margin:0.25rem 0 0; font-size:0.8rem; color:#888;">
+        <div class="form-group">
+          <label class="form-label">Skill name</label>
+          <input v-model="form.name" required class="form-input" />
+          <p class="form-hint">
             Slug: <code>{{ slug }}</code>
-            <span v-if="slug !== route.params.slug" style="color:#b45309; margin-left:0.5rem;">⚠ This will create a new skill — rename won't delete the old one.</span>
+            <span v-if="slug !== route.params.slug" class="rename-warn">⚠ This will create a new skill — rename won't delete the old one.</span>
           </p>
         </div>
 
-        <div style="margin-bottom:1.25rem;">
-          <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Description. When should Claude use this skill?</label>
-          <textarea
-            v-model="form.description"
-            required
-            rows="3"
-            style="width:100%; padding:0.6rem 0.75rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem; box-sizing:border-box; resize:vertical;"
-          />
+        <div class="form-group">
+          <label class="form-label">Description — when should Claude use this skill?</label>
+          <textarea v-model="form.description" required rows="3" class="form-textarea" />
         </div>
 
-        <div style="margin-bottom:1.75rem;">
-          <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Instructions for Claude (Markdown)</label>
-          <textarea
-            v-model="form.instructions"
-            required
-            rows="16"
-            style="width:100%; padding:0.6rem 0.75rem; border:1px solid #ccc; border-radius:6px; font-size:0.9rem; font-family:monospace; box-sizing:border-box; resize:vertical;"
-          />
+        <div class="form-group-lg">
+          <label class="form-label">Instructions for Claude (Markdown)</label>
+          <textarea v-model="form.instructions" required rows="16" class="form-textarea form-textarea-mono" />
         </div>
 
-        <div v-if="error" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:0.75rem 1rem; margin-bottom:1rem; color:#b91c1c; font-size:0.9rem;">
-          {{ error }}
-        </div>
+        <div v-if="error" class="form-error">{{ error }}</div>
 
-        <div style="display:flex; gap:0.75rem; align-items:center; justify-content:space-between;">
-          <div style="display:flex; gap:0.75rem; align-items:center;">
-            <button
-              type="submit"
-              :disabled="loading"
-              style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;"
-              :style="loading ? 'opacity:0.6; cursor:not-allowed;' : ''"
-            >
+        <div class="form-actions-spread">
+          <div class="form-actions">
+            <button type="submit" :disabled="loading" class="btn-primary">
               {{ loading ? 'Saving…' : 'Save changes' }}
             </button>
-            <a href="/" style="font-size:0.875rem; color:#666; text-decoration:none;">Cancel</a>
+            <a href="/" class="btn-cancel">Cancel</a>
           </div>
-          <button
-            type="button"
-            @click="showDeleteConfirm = true"
-            style="background:none; border:1px solid #fca5a5; color:#b91c1c; border-radius:6px; padding:0.7rem 1.25rem; font-size:0.875rem; font-weight:600; cursor:pointer;"
-          >
+          <button type="button" @click="showDeleteConfirm = true" class="btn-danger-outline">
             Remove skill
           </button>
         </div>
       </form>
 
       <!-- Delete confirmation modal -->
-      <div
-        v-if="showDeleteConfirm"
-        style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:100;"
-        @click.self="showDeleteConfirm = false"
-      >
-        <div style="background:#fff; border-radius:12px; padding:2rem; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-          <h2 style="font-size:1.1rem; font-weight:700; margin:0 0 0.5rem;">Remove skill?</h2>
-          <p style="color:#555; margin:0 0 1.5rem; font-size:0.9rem;">
+      <div v-if="showDeleteConfirm" class="modal-overlay" @click.self="showDeleteConfirm = false">
+        <div class="modal-box">
+          <h2 class="modal-title">Remove skill?</h2>
+          <p class="modal-body">
             This will permanently delete <strong>{{ skill.name }}</strong> from the repository. This cannot be undone.
           </p>
-          <div v-if="deleteError" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:0.6rem 0.875rem; margin-bottom:1rem; color:#b91c1c; font-size:0.875rem;">
-            {{ deleteError }}
-          </div>
-          <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
-            <button
-              @click="showDeleteConfirm = false"
-              style="background:none; border:1px solid #ddd; border-radius:6px; padding:0.6rem 1.25rem; font-size:0.875rem; cursor:pointer; color:#333;"
-            >
-              Cancel
-            </button>
-            <button
-              @click="deleteSkill"
-              :disabled="deleteLoading"
-              style="background:#b91c1c; color:#fff; border:none; border-radius:6px; padding:0.6rem 1.25rem; font-size:0.875rem; font-weight:600; cursor:pointer;"
-              :style="deleteLoading ? 'opacity:0.6; cursor:not-allowed;' : ''"
-            >
+          <div v-if="deleteError" class="form-error">{{ deleteError }}</div>
+          <div class="modal-actions">
+            <button @click="showDeleteConfirm = false" class="btn-modal-cancel">Cancel</button>
+            <button @click="deleteSkill" :disabled="deleteLoading" class="btn-modal-danger">
               {{ deleteLoading ? 'Removing…' : 'Yes, remove it' }}
             </button>
           </div>
@@ -107,10 +66,9 @@
       </div>
     </template>
 
-    <!-- Success toast -->
-    <div v-if="success" style="position:fixed; bottom:2rem; right:2rem; background:#16a34a; color:#fff; border-radius:8px; padding:1rem 1.5rem; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,0.15); max-width:320px;">
-      ✓ Skill <code style="background:rgba(255,255,255,0.2); padding:0 4px; border-radius:3px;">{{ success }}</code> saved!
-      <br><span style="font-size:0.85rem; font-weight:400; opacity:0.9;">Deploying now — ready in ~1 min.</span>
+    <div v-if="success" class="toast-success">
+      ✓ Skill <code>{{ success }}</code> saved!
+      <br><span class="toast-detail">Deploying now — ready in ~1 min.</span>
     </div>
   </main>
 </template>
@@ -118,7 +76,6 @@
 <script setup>
 const route = useRoute()
 
-// Load all skills at build time and find the one matching the slug
 const skillFiles = import.meta.glob('~/skills/**/SKILL.md', { as: 'raw', eager: true })
 
 function parseFrontmatter(raw) {
@@ -135,18 +92,13 @@ function parseFrontmatter(raw) {
 }
 
 const skill = computed(() => {
-  const entry = Object.entries(skillFiles).find(([path]) => {
-    const s = path.split('/').slice(-2)[0]
-    return s === route.params.slug
-  })
+  const entry = Object.entries(skillFiles).find(([path]) => path.split('/').slice(-2)[0] === route.params.slug)
   if (!entry) return null
-  const [, raw] = entry
-  return parseFrontmatter(raw)
+  return parseFrontmatter(entry[1])
 })
 
 const form = reactive({ name: '', description: '', instructions: '' })
 
-// Pre-fill form once skill is resolved
 watch(skill, (s) => {
   if (s) {
     form.name = s.name || route.params.slug
@@ -170,10 +122,7 @@ async function deleteSkill() {
   deleteError.value = ''
   deleteLoading.value = true
   try {
-    await $fetch('/api/skills/delete', {
-      method: 'DELETE',
-      body: { slug: route.params.slug }
-    })
+    await $fetch('/api/skills/delete', { method: 'DELETE', body: { slug: route.params.slug } })
     navigateTo('/')
   } catch (e) {
     deleteError.value = e?.data?.message || 'Delete failed. Try again.'
