@@ -47,7 +47,7 @@
       </div>
 
       <div style="margin-bottom:1.75rem;">
-        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Instructions for Claude</label>
+        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Instructions for Claude (as Markdown)</label>
         <textarea
           v-model="form.instructions"
           placeholder="Write step-by-step instructions for what Claude should do. Markdown supported.
