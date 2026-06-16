@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="top-bar">
-      <a href="/admin" class="top-bar-login">Authenticate →</a>
+      <a href="/admin" target="_blank" rel="noopener" class="top-bar-login">Authenticate →</a>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
