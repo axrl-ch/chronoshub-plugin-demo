@@ -17,7 +17,18 @@ export default defineNuxtConfig({
     }
   },
 
-  content: {},
+  content: {
+    collections: {
+      skills: {
+        type: 'page',
+        source: 'skills/**'
+      },
+      connectors: {
+        type: 'page',
+        source: 'connectors/**'
+      }
+    }
+  },
 
   compatibilityDate: '2025-01-01'
 })

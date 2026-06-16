@@ -1,0 +1,20 @@
+---
+name: slack
+title: Slack
+description: Read channels, send messages, search conversations, manage reactions, and create canvases in Slack workspaces.
+version: "1.0.0"
+provider: slack
+category: communication
+tags:
+  - messaging
+  - communication
+  - team
+enabled: true
+setupUrl: "https://api.slack.com/apps"
+requiredScopes:
+  - channels:read
+  - chat:write
+  - search:read
+---
+
+Connect Claude to your Slack workspace to read messages, send updates, search conversations, and interact with channels directly from Cowork.

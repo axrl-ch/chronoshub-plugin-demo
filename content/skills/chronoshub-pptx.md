@@ -1,0 +1,19 @@
+---
+name: chronoshub-pptx
+title: ChronosHub Presentations
+description: Generates polished PowerPoint presentations using the official ChronosHub branded template. Handles new decks, edits, and incremental builds across 70 slide types.
+version: "1.0.0"
+author: ChronosHub
+tags:
+  - presentations
+  - powerpoint
+  - branding
+triggers:
+  - "create a presentation"
+  - "make a deck"
+  - "build slides"
+  - "ChronosHub template"
+enabled: true
+---
+
+Generates a polished PowerPoint presentation for ChronosHub using their official branded template. Use this skill whenever someone asks to create a presentation, deck, slides, or pitch using ChronosHub branding.
