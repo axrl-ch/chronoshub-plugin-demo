@@ -1,23 +1,23 @@
 import { defineEventHandler } from 'h3'
-import { readdir, readFile } from 'fs/promises'
-import { join, resolve } from 'path'
 
 export default defineEventHandler(async () => {
-  // Skills folder is bundled with the deployment — read from filesystem
-  const skillsDir = resolve(process.cwd(), 'skills')
+  const storage = useStorage('assets:skills')
 
-  let dirs: string[]
+  let keys: string[]
   try {
-    const entries = await readdir(skillsDir, { withFileTypes: true })
-    dirs = entries.filter(e => e.isDirectory()).map(e => e.name)
+    keys = await storage.getKeys()
   } catch (e: any) {
-    return { skills: [], debug: { cwd: process.cwd(), skillsDir, error: String(e?.message) } }
+    return { skills: [], debug: { error: String(e?.message) } }
   }
 
+  // Keys look like "boop:SKILL.md" or "chronoshub-pptx:SKILL.md"
+  const skillMdKeys = keys.filter(k => k.endsWith(':SKILL.md') || k.endsWith(':skill.md'))
+
   const skills = await Promise.all(
-    dirs.map(async (slug) => {
+    skillMdKeys.map(async (key) => {
+      const slug = key.split(':')[0]
       try {
-        const content = await readFile(join(skillsDir, slug, 'SKILL.md'), 'utf8')
+        const content = await storage.getItem(key) as string
 
         const nameMatch = content.match(/^name:\s*(.+)/m)
         const descMatch = content.match(/^description:\s*[>|]?\s*\n?((?:[ \t]+.+\n?)+|.+)/m)

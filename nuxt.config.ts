@@ -5,7 +5,10 @@ export default defineNuxtConfig({
   ],
 
   nitro: {
-    preset: 'vercel'
+    preset: 'vercel',
+    serverAssets: [
+      { baseName: 'skills', dir: './skills' }
+    ]
   },
 
   studio: {
