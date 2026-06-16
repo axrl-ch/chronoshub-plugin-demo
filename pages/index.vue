@@ -4,7 +4,6 @@
       <h1 class="index-title">ChronosHub Plugin</h1>
       <div class="index-actions">
         <a href="/studio/new-skill" class="btn-add-skill">+ Add skill</a>
-        <a href="/admin" class="index-login">Login →</a>
       </div>
     </div>
 

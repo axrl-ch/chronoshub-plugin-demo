@@ -1,8 +1,11 @@
 <template>
   <div>
-    <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
-      {{ isDark ? '☀️' : '🌙' }}
-    </button>
+    <div class="top-bar">
+      <a href="/admin" class="top-bar-login">Login →</a>
+      <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+        {{ isDark ? '☀️' : '🌙' }}
+      </button>
+    </div>
     <NuxtPage />
   </div>
 </template>
@@ -178,9 +181,18 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
 .upload-sub { margin: 0.25rem 0 0; color: var(--text-subtle); font-size: 0.875rem; }
 .upload-filename { margin: 0.75rem 0 0; color: #4ade80; font-size: 0.875rem; font-weight: 600; }
 
-/* ── Theme toggle button ── */
-.theme-toggle {
+/* ── Top bar (login + theme toggle) ── */
+.top-bar {
   position: fixed; top: 1rem; right: 1rem; z-index: 200;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.top-bar-login {
+  color: var(--text-subtle); text-decoration: none; font-size: 0.875rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
+}
+.top-bar-login:hover { color: var(--text); border-color: var(--text-muted); }
+.theme-toggle {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 1rem;
   cursor: pointer; line-height: 1;
