@@ -8,7 +8,8 @@
       </div>
     </div>
 
-    <pre style="font-size:0.75rem; background:#f5f5f5; padding:1rem; border-radius:6px; overflow:auto; margin-bottom:1rem;">DEBUG: {{ JSON.stringify({ skills, error: fetchError?.message }, null, 2) }}</pre>
+    <pre style="font-size:0.75rem; background:#f5f5f5; padding:1rem; border-radius:6px; overflow:auto; margin-bottom:1rem;">queryCollection: {{ JSON.stringify({ skills, error: fetchError?.message }, null, 2) }}
+server route: {{ JSON.stringify(debugData, null, 2) }}</pre>
     <div v-if="!skills?.length" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
@@ -32,4 +33,5 @@
 const { data: skills, error: fetchError } = await useAsyncData('skills',
   () => queryCollection('skills').order('title', 'ASC').all()
 )
+const { data: debugData } = await useFetch('/api/skills-debug')
 </script>
