@@ -35,7 +35,7 @@
       </div>
 
       <div style="margin-bottom:1.25rem;">
-        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">When should Claude use this skill?</label>
+        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Description. When should Claude use this skill?</label>
         <textarea
           v-model="form.description"
           placeholder="e.g. Use this skill whenever someone asks to generate a weekly activity report or status update. Trigger phrases: 'weekly report', 'status update', 'what did I do this week'."
