@@ -10,8 +10,8 @@ export default defineEventHandler(async () => {
   try {
     const entries = await readdir(skillsDir, { withFileTypes: true })
     dirs = entries.filter(e => e.isDirectory()).map(e => e.name)
-  } catch {
-    return { skills: [] }
+  } catch (e: any) {
+    return { skills: [], debug: { cwd: process.cwd(), skillsDir, error: String(e?.message) } }
   }
 
   const skills = await Promise.all(
