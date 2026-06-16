@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="top-bar">
-      <button class="top-bar-login" @click="openAuth">{{ authDone ? '✓ Authenticated' : 'Authenticate →' }}</button>
+      <a v-if="returnUrl" :href="returnUrl" class="top-bar-return" @click="clearReturn">← Return to form</a>
+      <button class="top-bar-login" @click="openAuth">Authenticate →</button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
@@ -12,12 +13,14 @@
 
 <script setup>
 const isDark = ref(true)
-const authDone = ref(false)
+const returnUrl = ref('')
+const route = useRoute()
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
+  returnUrl.value = localStorage.getItem('_auth_return_url') || ''
 })
 
 function toggleTheme() {
@@ -28,21 +31,17 @@ function toggleTheme() {
 }
 
 function openAuth() {
-  const w = 600, h = 700
-  const left = Math.round(window.screenX + (window.outerWidth - w) / 2)
-  const top  = Math.round(window.screenY + (window.outerHeight - h) / 2)
-  const popup = window.open('/admin', 'chronoshub_auth', `width=${w},height=${h},left=${left},top=${top},popup=1`)
-  if (!popup) { window.open('/admin', '_blank'); return }
+  // Save where we are so we can show a Return button after auth
+  localStorage.setItem('_auth_return_url', route.fullPath)
+  returnUrl.value = route.fullPath
+  // Trigger form save event so pages can persist their draft
+  window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
+  window.location.href = '/admin'
+}
 
-  // Poll until popup is closed, then mark as authenticated
-  // (session cookie is shared, so API calls will work immediately)
-  const timer = setInterval(() => {
-    if (popup.closed) {
-      clearInterval(timer)
-      authDone.value = true
-      setTimeout(() => authDone.value = false, 5000)
-    }
-  }, 400)
+function clearReturn() {
+  localStorage.removeItem('_auth_return_url')
+  returnUrl.value = ''
 }
 </script>
 
@@ -205,6 +204,14 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
   position: fixed; top: 1rem; right: 1rem; z-index: 200;
   display: flex; align-items: center; gap: 0.5rem;
 }
+.top-bar-return {
+  color: #4ade80; font-size: 0.875rem; cursor: pointer;
+  background: var(--bg-card); border: 1px solid #166534;
+  border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
+  text-decoration: none; white-space: nowrap;
+}
+.top-bar-return:hover { border-color: #4ade80; }
+[data-theme="light"] .top-bar-return { color: #15803d; border-color: #bbf7d0; }
 .top-bar-login {
   color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);

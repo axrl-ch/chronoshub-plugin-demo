@@ -140,6 +140,8 @@ Instructions go here..."
 </style>
 
 <script setup>
+const DRAFT_KEY = '_new_skill_draft'
+
 const mode = ref('form')
 const loading = ref(false)
 const error = ref('')
@@ -149,6 +151,33 @@ const fileInput = ref(null)
 const pasteRaw = ref('')
 
 const form = reactive({ name: '', description: '', instructions: '' })
+
+function saveDraft() {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify({
+    mode: mode.value, name: form.name, description: form.description,
+    instructions: form.instructions, pasteRaw: pasteRaw.value
+  }))
+}
+
+onMounted(() => {
+  const raw = localStorage.getItem(DRAFT_KEY)
+  if (raw) {
+    try {
+      const d = JSON.parse(raw)
+      mode.value = d.mode || 'form'
+      form.name = d.name || ''
+      form.description = d.description || ''
+      form.instructions = d.instructions || ''
+      pasteRaw.value = d.pasteRaw || ''
+    } catch {}
+    localStorage.removeItem(DRAFT_KEY)
+  }
+  window.addEventListener('save-draft-for-auth', saveDraft)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('save-draft-for-auth', saveDraft)
+})
 
 const slug = computed(() =>
   form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')

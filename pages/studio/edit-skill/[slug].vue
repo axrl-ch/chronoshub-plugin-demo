@@ -118,6 +118,32 @@ const showDeleteConfirm = ref(false)
 const deleteLoading = ref(false)
 const deleteError = ref('')
 
+const draftKey = computed(() => `_edit_skill_draft_${route.params.slug}`)
+
+function saveDraft() {
+  localStorage.setItem(draftKey.value, JSON.stringify({
+    name: form.name, description: form.description, instructions: form.instructions
+  }))
+}
+
+onMounted(() => {
+  const raw = localStorage.getItem(draftKey.value)
+  if (raw) {
+    try {
+      const d = JSON.parse(raw)
+      form.name = d.name || ''
+      form.description = d.description || ''
+      form.instructions = d.instructions || ''
+    } catch {}
+    localStorage.removeItem(draftKey.value)
+  }
+  window.addEventListener('save-draft-for-auth', saveDraft)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('save-draft-for-auth', saveDraft)
+})
+
 async function deleteSkill() {
   deleteError.value = ''
   deleteLoading.value = true
