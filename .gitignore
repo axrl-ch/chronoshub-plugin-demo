@@ -1,8 +1,6 @@
-# macOS junk
 __MACOSX/
 .DS_Store
 
-# Windows junk
 Thumbs.db
 desktop.ini
 
