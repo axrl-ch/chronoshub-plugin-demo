@@ -3,7 +3,7 @@ import { requireStudioAuth } from '../../utils/studio-auth'
 import AdmZip from 'adm-zip'
 
 export default defineEventHandler(async (event) => {
-  await requireStudioAuth(event)
+  const user = await requireStudioAuth(event) as any
 
   const form = await readMultipartFormData(event)
   const file = form?.find(f => f.name === 'file')
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'No file uploaded' })
   }
 
-  const token = process.env.STUDIO_GITHUB_TOKEN
+  const token = user.accessToken
   const owner = process.env.VERCEL_GIT_REPO_OWNER || process.env.GITHUB_OWNER
   const repo = process.env.VERCEL_GIT_REPO_SLUG || process.env.GITHUB_REPO
 
