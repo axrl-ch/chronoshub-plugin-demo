@@ -67,14 +67,17 @@ Example:
         {{ error }}
       </div>
 
-      <button
-        type="submit"
-        :disabled="loading"
-        style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer; opacity:1;"
-        :style="loading ? 'opacity:0.6; cursor:not-allowed;' : ''"
-      >
-        {{ loading ? 'Adding skill…' : 'Add skill' }}
-      </button>
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <button
+          type="submit"
+          :disabled="loading"
+          style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer; opacity:1;"
+          :style="loading ? 'opacity:0.6; cursor:not-allowed;' : ''"
+        >
+          {{ loading ? 'Adding skill…' : 'Add skill' }}
+        </button>
+        <a href="/" style="font-size:0.875rem; color:#666; text-decoration:none;">Cancel</a>
+      </div>
     </form>
 
     <!-- Upload mode -->
@@ -104,14 +107,17 @@ Example:
         {{ error }}
       </div>
 
-      <button
-        type="submit"
-        :disabled="loading || !uploadFile"
-        style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;"
-        :style="(loading || !uploadFile) ? 'opacity:0.4; cursor:not-allowed;' : ''"
-      >
-        {{ loading ? 'Uploading…' : 'Upload skill' }}
-      </button>
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <button
+          type="submit"
+          :disabled="loading || !uploadFile"
+          style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;"
+          :style="(loading || !uploadFile) ? 'opacity:0.4; cursor:not-allowed;' : ''"
+        >
+          {{ loading ? 'Uploading…' : 'Upload skill' }}
+        </button>
+        <a href="/" style="font-size:0.875rem; color:#666; text-decoration:none;">Cancel</a>
+      </div>
     </form>
 
     <!-- Success -->
