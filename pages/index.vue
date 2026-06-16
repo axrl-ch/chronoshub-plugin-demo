@@ -29,7 +29,7 @@
 
 <script setup>
 // Read skill markdown files at build time via Vite glob — no SQLite/native modules needed
-const skillFiles = import.meta.glob('~/content/skills/**/*.md', { as: 'raw', eager: true })
+const skillFiles = import.meta.glob('~/skills/**/SKILL.md', { as: 'raw', eager: true })
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---/)
