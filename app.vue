@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="top-bar">
-      <a href="/admin" target="_blank" rel="noopener" class="top-bar-login">Authenticate →</a>
+      <button class="top-bar-login" @click="openAuth">{{ authDone ? '✓ Authenticated' : 'Authenticate →' }}</button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
@@ -12,6 +12,7 @@
 
 <script setup>
 const isDark = ref(true)
+const authDone = ref(false)
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
@@ -24,6 +25,24 @@ function toggleTheme() {
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.setAttribute('data-theme', theme)
   localStorage.setItem('theme', theme)
+}
+
+function openAuth() {
+  const w = 600, h = 700
+  const left = Math.round(window.screenX + (window.outerWidth - w) / 2)
+  const top  = Math.round(window.screenY + (window.outerHeight - h) / 2)
+  const popup = window.open('/admin', 'chronoshub_auth', `width=${w},height=${h},left=${left},top=${top},popup=1`)
+  if (!popup) { window.open('/admin', '_blank'); return }
+
+  // Poll until popup is closed, then mark as authenticated
+  // (session cookie is shared, so API calls will work immediately)
+  const timer = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(timer)
+      authDone.value = true
+      setTimeout(() => authDone.value = false, 5000)
+    }
+  }, 400)
 }
 </script>
 
@@ -187,9 +206,10 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
   display: flex; align-items: center; gap: 0.5rem;
 }
 .top-bar-login {
-  color: var(--text-subtle); text-decoration: none; font-size: 0.875rem;
+  color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
+  text-decoration: none;
 }
 .top-bar-login:hover { color: var(--text); border-color: var(--text-muted); }
 .theme-toggle {
