@@ -16,8 +16,8 @@ export default defineEventHandler(async () => {
   let entries: any[]
   try {
     entries = await $fetch<any[]>(`https://api.github.com/repos/${owner}/${repo}/contents/skills`, { headers })
-  } catch {
-    return { skills: [] }
+  } catch (e: any) {
+    return { skills: [], debug: { error: String(e?.message || e), owner, repo, hasToken: !!token } }
   }
 
   const skillDirs = entries.filter((e: any) => e.type === 'dir')

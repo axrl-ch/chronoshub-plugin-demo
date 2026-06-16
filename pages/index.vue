@@ -10,6 +10,7 @@
 
     <!-- Skills list -->
     <div v-if="pending" style="color:#888; font-size:0.9rem;">Loading skills…</div>
+    <pre v-if="data?.debug" style="font-size:0.75rem; background:#f5f5f5; padding:1rem; border-radius:6px; overflow:auto;">{{ JSON.stringify(data.debug, null, 2) }}</pre>
     <div v-else-if="skills.length === 0" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
