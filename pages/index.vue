@@ -18,7 +18,7 @@
         style="border:1px solid #e5e5e5; border-radius:8px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center;"
       >
         <div>
-          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.title }}</div>
+          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.name }}</div>
           <div style="font-size:0.825rem; color:#666; max-width:520px;">{{ skill.description }}</div>
         </div>
         <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px; white-space:nowrap; margin-left:1rem;">{{ skill.slug }}</code>
@@ -45,12 +45,14 @@ function parseFrontmatter(raw) {
 }
 
 const skills = Object.entries(skillFiles)
-  .filter(([path]) => !path.includes('.navigation'))
-  .map(([_, raw]) => {
+  .map(([path, raw]) => {
+    // Slug is the folder name: skills/<slug>/SKILL.md
+    const slug = path.split('/').slice(-2)[0]
     const fm = parseFrontmatter(raw)
-    if (!fm.name || !fm.title) return null
-    return { slug: fm.name, title: fm.title, description: fm.description }
+    if (!fm.name && !slug) return null
+    const name = fm.name || slug
+    return { slug, name, description: fm.description }
   })
   .filter(Boolean)
-  .sort((a, b) => a.title.localeCompare(b.title))
+  .sort((a, b) => a.name.localeCompare(b.name))
 </script>
