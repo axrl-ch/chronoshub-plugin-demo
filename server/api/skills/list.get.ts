@@ -9,8 +9,8 @@ export default defineEventHandler(async () => {
     throw createError({ statusCode: 500, message: 'GitHub configuration missing' })
   }
 
+  // Public repo — no auth needed. STUDIO_GITHUB_TOKEN is scoped to content/ only.
   const headers: Record<string, string> = { 'User-Agent': 'chronoshub-studio' }
-  if (token) headers['Authorization'] = `token ${token}`
 
   // List top-level entries in skills/
   let entries: any[]
