@@ -51,18 +51,60 @@
           {{ error }}
         </div>
 
-        <div style="display:flex; gap:0.75rem; align-items:center;">
+        <div style="display:flex; gap:0.75rem; align-items:center; justify-content:space-between;">
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <button
+              type="submit"
+              :disabled="loading"
+              style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;"
+              :style="loading ? 'opacity:0.6; cursor:not-allowed;' : ''"
+            >
+              {{ loading ? 'Saving…' : 'Save changes' }}
+            </button>
+            <a href="/" style="font-size:0.875rem; color:#666; text-decoration:none;">Cancel</a>
+          </div>
           <button
-            type="submit"
-            :disabled="loading"
-            style="background:#1a1a1a; color:#fff; border:none; border-radius:6px; padding:0.7rem 1.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;"
-            :style="loading ? 'opacity:0.6; cursor:not-allowed;' : ''"
+            type="button"
+            @click="showDeleteConfirm = true"
+            style="background:none; border:1px solid #fca5a5; color:#b91c1c; border-radius:6px; padding:0.7rem 1.25rem; font-size:0.875rem; font-weight:600; cursor:pointer;"
           >
-            {{ loading ? 'Saving…' : 'Save changes' }}
+            Remove skill
           </button>
-          <a href="/" style="font-size:0.875rem; color:#666; text-decoration:none;">Cancel</a>
         </div>
       </form>
+
+      <!-- Delete confirmation modal -->
+      <div
+        v-if="showDeleteConfirm"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:100;"
+        @click.self="showDeleteConfirm = false"
+      >
+        <div style="background:#fff; border-radius:12px; padding:2rem; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+          <h2 style="font-size:1.1rem; font-weight:700; margin:0 0 0.5rem;">Remove skill?</h2>
+          <p style="color:#555; margin:0 0 1.5rem; font-size:0.9rem;">
+            This will permanently delete <strong>{{ skill.name }}</strong> from the repository. This cannot be undone.
+          </p>
+          <div v-if="deleteError" style="background:#fef2f2; border:1px solid #fca5a5; border-radius:6px; padding:0.6rem 0.875rem; margin-bottom:1rem; color:#b91c1c; font-size:0.875rem;">
+            {{ deleteError }}
+          </div>
+          <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button
+              @click="showDeleteConfirm = false"
+              style="background:none; border:1px solid #ddd; border-radius:6px; padding:0.6rem 1.25rem; font-size:0.875rem; cursor:pointer; color:#333;"
+            >
+              Cancel
+            </button>
+            <button
+              @click="deleteSkill"
+              :disabled="deleteLoading"
+              style="background:#b91c1c; color:#fff; border:none; border-radius:6px; padding:0.6rem 1.25rem; font-size:0.875rem; font-weight:600; cursor:pointer;"
+              :style="deleteLoading ? 'opacity:0.6; cursor:not-allowed;' : ''"
+            >
+              {{ deleteLoading ? 'Removing…' : 'Yes, remove it' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </template>
 
     <!-- Success toast -->
@@ -120,6 +162,24 @@ const slug = computed(() =>
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
+const showDeleteConfirm = ref(false)
+const deleteLoading = ref(false)
+const deleteError = ref('')
+
+async function deleteSkill() {
+  deleteError.value = ''
+  deleteLoading.value = true
+  try {
+    await $fetch('/api/skills/delete', {
+      method: 'DELETE',
+      body: { slug: route.params.slug }
+    })
+    navigateTo('/')
+  } catch (e) {
+    deleteError.value = e?.data?.message || 'Delete failed. Try again.'
+    deleteLoading.value = false
+  }
+}
 
 async function submitForm() {
   error.value = ''
