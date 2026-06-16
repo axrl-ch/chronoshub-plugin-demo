@@ -22,7 +22,7 @@
     <!-- Form mode -->
     <form v-if="mode==='form'" @submit.prevent="submitForm">
       <div style="margin-bottom:1.25rem;">
-        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Skill name</label>
+        <label style="display:block; font-weight:600; margin-bottom:0.4rem;">Skill name (Warning! If you have the same name as an existing skill that skill will be overwritten)</label>
         <input
           v-model="form.name"
           placeholder="e.g. Weekly Report Generator"
