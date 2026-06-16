@@ -1,7 +1,7 @@
 ---
-name: docx
 title: Word Documents
 description: Creates, edits, and manipulates Word documents (.docx) with support for tables of contents, headings, page numbers, images, and professional formatting.
+name: docx
 version: 1.0.0
 author: ChronosHub
 tags:

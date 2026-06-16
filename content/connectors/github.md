@@ -1,7 +1,7 @@
 ---
-name: github
 title: GitHub
 description: Browse repos, read code, create and review pull requests, manage issues, and run code reviews directly from Claude.
+name: github
 version: 1.0.0
 provider: github
 category: engineering

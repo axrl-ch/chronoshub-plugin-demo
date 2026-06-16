@@ -1,7 +1,7 @@
 ---
-name: slack
 title: Slack
 description: Read channels, send messages, search conversations, manage reactions, and create canvases in Slack workspaces.
+name: slack
 version: 1.0.0
 provider: slack
 category: communication

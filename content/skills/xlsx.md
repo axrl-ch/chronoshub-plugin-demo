@@ -1,7 +1,7 @@
 ---
-name: xlsx
 title: Excel Spreadsheets
 description: Creates and edits Excel spreadsheets with formulas, charts, pivot tables, and data analysis. Handles budgets, financial models, and tabular data.
+name: xlsx
 version: 1.0.0
 author: ChronosHub
 tags:
