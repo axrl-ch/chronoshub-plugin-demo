@@ -8,28 +8,49 @@
       </div>
     </div>
 
-    <pre style="font-size:0.75rem; background:#f5f5f5; padding:1rem; border-radius:6px; overflow:auto; margin-bottom:1rem;">DEBUG: {{ JSON.stringify({ skills, error: fetchError?.message }, null, 2) }}</pre>
-    <div v-if="!skills?.length" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
+    <div v-if="!skills.length" style="color:#888; font-size:0.9rem; padding:2rem 0; text-align:center;">
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
     <div v-else style="display:flex; flex-direction:column; gap:0.75rem;">
       <div
         v-for="skill in skills"
-        :key="skill.name"
+        :key="skill.slug"
         style="border:1px solid #e5e5e5; border-radius:8px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center;"
       >
         <div>
-          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.title || skill.name }}</div>
+          <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ skill.title }}</div>
           <div style="font-size:0.825rem; color:#666; max-width:520px;">{{ skill.description }}</div>
         </div>
-        <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px; white-space:nowrap; margin-left:1rem;">{{ skill.name }}</code>
+        <code style="font-size:0.75rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px; white-space:nowrap; margin-left:1rem;">{{ skill.slug }}</code>
       </div>
     </div>
   </main>
 </template>
 
 <script setup>
-const { data: skills, error: fetchError } = await useAsyncData('skills',
-  () => queryCollection('skills').order('title', 'ASC').all()
-)
+// Read skill markdown files at build time via Vite glob — no SQLite/native modules needed
+const skillFiles = import.meta.glob('~/content/skills/**/*.md', { as: 'raw', eager: true })
+
+function parseFrontmatter(raw) {
+  const match = raw.match(/^---\n([\s\S]*?)\n---/)
+  if (!match) return {}
+  const fm = match[1]
+  const get = (pattern) => fm.match(pattern)?.[1]?.trim() || ''
+  const desc = fm.match(/^description:\s*[>|]?\s*\n((?:[ \t]+.+\n?)+)/m)
+  return {
+    title: get(/^title:\s*(.+)/m),
+    name: get(/^name:\s*(.+)/m),
+    description: desc ? desc[1].trim().replace(/\s+/g, ' ') : get(/^description:\s*(.+)/m)
+  }
+}
+
+const skills = Object.entries(skillFiles)
+  .filter(([path]) => !path.includes('.navigation'))
+  .map(([_, raw]) => {
+    const fm = parseFrontmatter(raw)
+    if (!fm.name || !fm.title) return null
+    return { slug: fm.name, title: fm.title, description: fm.description }
+  })
+  .filter(Boolean)
+  .sort((a, b) => a.title.localeCompare(b.title))
 </script>

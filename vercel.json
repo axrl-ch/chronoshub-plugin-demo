@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npm rebuild better-sqlite3 && npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install"
 }
