@@ -7,7 +7,11 @@ export default defineEventHandler(async () => {
   try {
     keys = await storage.getKeys()
   } catch (e: any) {
-    return { skills: [], debug: { error: String(e?.message) } }
+    return { skills: [], debug: { stage: 'getKeys failed', error: String(e?.message) } }
+  }
+
+  if (keys.length === 0) {
+    return { skills: [], debug: { stage: 'empty keys', keys } }
   }
 
   // Keys look like "boop:SKILL.md" or "chronoshub-pptx:SKILL.md"
