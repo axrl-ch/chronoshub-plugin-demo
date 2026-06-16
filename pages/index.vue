@@ -12,31 +12,24 @@
       No skills yet. <a href="/studio/new-skill" style="color:#1a1a1a;">Add the first one →</a>
     </div>
     <div v-else style="display:flex; flex-direction:column; gap:0.75rem;">
-      <a
+      <div
         v-for="skill in skills"
         :key="skill.slug"
-        :href="`/studio/edit-skill/${skill.slug}`"
         class="skill-card"
+        @click="expandedDesc[skill.slug] = !expandedDesc[skill.slug]"
       >
         <div style="flex:1; min-width:0;">
           <div class="skill-name">{{ skill.name }}</div>
-          <div
-            class="skill-desc"
-            :class="{ expanded: expandedDesc[skill.slug] }"
-          >{{ skill.description }}</div>
-          <button
-            v-if="skill.description && skill.description.length > 120"
-            class="desc-toggle"
-            @click.prevent.stop="expandedDesc[skill.slug] = !expandedDesc[skill.slug]"
-          >
-            {{ expandedDesc[skill.slug] ? 'Show less ▲' : 'Show more ▼' }}
-          </button>
+          <div class="skill-desc" :class="{ expanded: expandedDesc[skill.slug] }">{{ skill.description }}</div>
         </div>
         <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0; margin-left:1rem;">
-          <code style="font-size:0.86rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:4px;">{{ skill.slug }}</code>
-          <span style="font-size:0.86rem; color:#bbb;">›</span>
+          <a
+            :href="`/studio/edit-skill/${skill.slug}`"
+            class="edit-btn"
+            @click.stop
+          >Edit</a>
         </div>
-      </a>
+      </div>
     </div>
   </main>
 </template>
@@ -50,8 +43,6 @@
   justify-content: space-between;
   align-items: flex-start;
   cursor: pointer;
-  text-decoration: none;
-  color: inherit;
   transition: border-color 0.15s;
 }
 .skill-card:hover { border-color: #aaa; }
@@ -74,17 +65,19 @@
   overflow: visible;
   -webkit-line-clamp: unset;
 }
-.desc-toggle {
-  background: none;
+.edit-btn {
+  background: #f0f0f0;
+  color: #555;
   border: none;
-  padding: 0;
-  margin-top: 0.3rem;
-  font-size: 0.8rem;
-  color: #999;
+  border-radius: 6px;
+  padding: 0.35rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  display: block;
+  text-decoration: none;
+  white-space: nowrap;
 }
-.desc-toggle:hover { color: #444; }
+.edit-btn:hover { background: #e4e4e4; color: #222; }
 </style>
 
 <script setup>
