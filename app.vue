@@ -20,7 +20,7 @@ onMounted(() => {
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
 
-  returnUrl.value = localStorage.getItem('_auth_return_url') || ''
+  returnUrl.value = sessionStorage.getItem('_auth_return_url') || ''
 })
 
 function toggleTheme() {
@@ -32,16 +32,14 @@ function toggleTheme() {
 
 function openAuth() {
   const currentPath = window.location.pathname + window.location.search
-  localStorage.removeItem('_auth_debug_log') // fresh log per attempt
-  localStorage.setItem('_auth_return_url', currentPath)
+  sessionStorage.setItem('_auth_return_url', currentPath)
   returnUrl.value = currentPath
-  // Trigger form save event so pages can persist their draft
   window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
   window.location.href = '/admin'
 }
 
 function clearReturn() {
-  localStorage.removeItem('_auth_return_url')
+  sessionStorage.removeItem('_auth_return_url')
   returnUrl.value = ''
 }
 </script>
