@@ -1,9 +1,11 @@
 <template>
   <div>
     <div class="top-bar">
-      <button class="top-bar-login" @click="openAuth" :disabled="authPending">
-        {{ authPending ? 'Authenticating…' : 'Authenticate →' }}
-      </button>
+      <template v-if="authPending">
+        <span class="top-bar-status">Authenticating in popup…</span>
+        <button class="top-bar-done" @click="authDone">Done →</button>
+      </template>
+      <button v-else class="top-bar-login" @click="openAuth">Authenticate →</button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
@@ -15,6 +17,8 @@
 <script setup>
 const isDark = ref(true)
 const authPending = ref(false)
+let authPopup = null
+let authTimer = null
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
@@ -29,29 +33,24 @@ function toggleTheme() {
   localStorage.setItem('theme', theme)
 }
 
-async function isAuthenticated() {
-  try {
-    const r = await fetch('/__nuxt_studio/auth/session', { credentials: 'include' })
-    if (!r.ok) return false
-    const data = await r.json()
-    // Session exists when it has user identifying fields
-    return !!(data?.accessToken || data?.email || data?.provider)
-  } catch {
-    return false
-  }
+function authDone() {
+  // User clicked "Done" after authenticating in the popup
+  if (authPopup && !authPopup.closed) authPopup.close()
+  authPopup = null
+  clearInterval(authTimer)
+  authPending.value = false
+  window.location.reload()
 }
 
-async function openAuth() {
-  // Save any in-progress form draft before anything else
+function openAuth() {
+  if (authPending.value) {
+    // Already waiting — focus the existing popup if still open
+    if (authPopup && !authPopup.closed) authPopup.focus()
+    return
+  }
+
+  // Save any in-progress form draft
   window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
-
-  // Don't re-trigger if already waiting
-  if (authPending.value) return
-
-  // If already authenticated, nothing to do
-  if (await isAuthenticated()) return
-
-  authPending.value = true
 
   const popup = window.open(
     '/admin',
@@ -61,51 +60,42 @@ async function openAuth() {
 
   if (!popup || popup.closed) {
     // Popup blocked — fall back to same-tab navigation
-    authPending.value = false
     window.location.href = '/admin?redirect=' + encodeURIComponent(window.location.pathname + window.location.search)
     return
   }
 
-  // Poll the session endpoint every second.
-  // The session cookie is domain-wide, so when the popup's OAuth completes
-  // the main window's requests will include it.
-  let timer = null
-  let popupClosedAt = null
+  authPopup = popup
+  authPending.value = true
 
-  function cleanup() {
-    clearInterval(timer)
-    authPending.value = false
-  }
+  // Track when popup visits GitHub (cross-origin) then returns to our domain.
+  // When it returns, OAuth is done — reload the main window automatically.
+  let wentCrossOrigin = false
 
-  timer = setInterval(async () => {
-    const popupGone = !popup || popup.closed
-
-    if (popupGone && !popupClosedAt) {
-      // Popup just closed — wait 800ms for the cookie to propagate, then do one final check
-      popupClosedAt = Date.now()
-      setTimeout(async () => {
-        if (await isAuthenticated()) {
-          cleanup()
-          window.location.reload()
-        } else {
-          cleanup()
-        }
-      }, 800)
-      clearInterval(timer)
+  authTimer = setInterval(() => {
+    if (!authPopup || authPopup.closed) {
+      // Popup closed (user closed it manually or it was closed after auth)
+      clearInterval(authTimer)
+      authPopup = null
+      authPending.value = false
+      window.location.reload()
       return
     }
 
-    if (await isAuthenticated()) {
-      cleanup()
-      try { popup.close() } catch (_) {}
-      window.location.reload()
+    try {
+      // This throws a cross-origin error while popup is on GitHub
+      const path = authPopup.location.pathname
+      // If we get here, popup is on our domain
+      if (wentCrossOrigin) {
+        // Came back from GitHub — OAuth complete!
+        clearInterval(authTimer)
+        setTimeout(() => authDone(), 800) // brief pause so popup can settle
+      }
+      // (while wentCrossOrigin is still false, we're in the initial same-origin phase)
+    } catch (_) {
+      // Cross-origin — popup is on GitHub
+      wentCrossOrigin = true
     }
-  }, 1200)
-
-  // Safety timeout after 5 minutes
-  setTimeout(() => {
-    if (authPending.value) cleanup()
-  }, 300_000)
+  }, 400)
 }
 </script>
 
@@ -263,19 +253,29 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
 .upload-sub { margin: 0.25rem 0 0; color: var(--text-subtle); font-size: 0.875rem; }
 .upload-filename { margin: 0.75rem 0 0; color: #4ade80; font-size: 0.875rem; font-weight: 600; }
 
-/* ── Top bar (login + theme toggle) ── */
+/* ── Top bar ── */
 .top-bar {
   position: fixed; top: 1rem; right: 1rem; z-index: 200;
   display: flex; align-items: center; gap: 0.5rem;
 }
+.top-bar-status {
+  font-size: 0.8rem; color: var(--text-subtle);
+  font-family: system-ui, sans-serif;
+}
+.top-bar-done {
+  color: #4ade80; font-size: 0.875rem; cursor: pointer;
+  background: var(--bg-card); border: 1px solid #166534;
+  border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
+}
+.top-bar-done:hover { border-color: #4ade80; }
+[data-theme="light"] .top-bar-done { color: #15803d; border-color: #bbf7d0; }
 .top-bar-login {
   color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
   text-decoration: none;
 }
-.top-bar-login:disabled { opacity: 0.5; cursor: default; }
-.top-bar-login:not(:disabled):hover { color: var(--text); border-color: var(--text-muted); }
+.top-bar-login:hover { color: var(--text); border-color: var(--text-muted); }
 .theme-toggle {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 1rem;
