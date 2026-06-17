@@ -44,7 +44,6 @@ function authDone() {
 
 function openAuth() {
   if (authPending.value) {
-    // Already waiting — focus the existing popup if still open
     if (authPopup && !authPopup.closed) authPopup.focus()
     return
   }
@@ -67,35 +66,34 @@ function openAuth() {
   authPopup = popup
   authPending.value = true
 
-  // Track when popup visits GitHub (cross-origin) then returns to our domain.
-  // When it returns, OAuth is done — reload the main window automatically.
-  let wentCrossOrigin = false
+  // nuxt-studio sets a non-httpOnly cookie "studio-session-check=true" after OAuth completes.
+  // Since cookies are shared across all same-origin windows, we can poll document.cookie
+  // from the main window to detect when the popup's auth finishes — no fetch needed.
+  const hadSession = document.cookie.includes('studio-session-check=')
 
   authTimer = setInterval(() => {
-    if (!authPopup || authPopup.closed) {
-      // Popup closed (user closed it manually or it was closed after auth)
+    const hasSession = document.cookie.includes('studio-session-check=')
+
+    if (!hadSession && hasSession) {
+      // Cookie just appeared — OAuth completed in the popup
       clearInterval(authTimer)
+      authTimer = null
+      try { authPopup.close() } catch (_) {}
       authPopup = null
       authPending.value = false
       window.location.reload()
       return
     }
 
-    try {
-      // This throws a cross-origin error while popup is on GitHub
-      const path = authPopup.location.pathname
-      // If we get here, popup is on our domain
-      if (wentCrossOrigin) {
-        // Came back from GitHub — OAuth complete!
-        clearInterval(authTimer)
-        setTimeout(() => authDone(), 800) // brief pause so popup can settle
-      }
-      // (while wentCrossOrigin is still false, we're in the initial same-origin phase)
-    } catch (_) {
-      // Cross-origin — popup is on GitHub
-      wentCrossOrigin = true
+    if (!authPopup || authPopup.closed) {
+      // Popup was closed (manually or after auth)
+      clearInterval(authTimer)
+      authTimer = null
+      authPopup = null
+      authPending.value = false
+      window.location.reload()
     }
-  }, 400)
+  }, 500)
 }
 </script>
 
