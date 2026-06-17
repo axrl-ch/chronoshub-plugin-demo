@@ -1,11 +1,7 @@
 <template>
   <div>
     <div class="top-bar">
-      <template v-if="authPending">
-        <span class="top-bar-status">Authenticating in popup…</span>
-        <button class="top-bar-done" @click="authDone">Done →</button>
-      </template>
-      <button v-else class="top-bar-login" @click="openAuth">Authenticate →</button>
+      <button class="top-bar-login" @click="openAuth">Authenticate →</button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
@@ -16,9 +12,6 @@
 
 <script setup>
 const isDark = ref(true)
-const authPending = ref(false)
-let authPopup = null
-let authTimer = null
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
@@ -33,67 +26,8 @@ function toggleTheme() {
   localStorage.setItem('theme', theme)
 }
 
-function authDone() {
-  // User clicked "Done" after authenticating in the popup
-  if (authPopup && !authPopup.closed) authPopup.close()
-  authPopup = null
-  clearInterval(authTimer)
-  authPending.value = false
-  window.location.reload()
-}
-
 function openAuth() {
-  if (authPending.value) {
-    if (authPopup && !authPopup.closed) authPopup.focus()
-    return
-  }
-
-  // Save any in-progress form draft
-  window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
-
-  const popup = window.open(
-    '/admin',
-    'studio-auth',
-    'width=520,height=680,left=' + Math.round((screen.width - 520) / 2) + ',top=' + Math.round((screen.height - 680) / 2)
-  )
-
-  if (!popup || popup.closed) {
-    // Popup blocked — fall back to same-tab navigation
-    window.location.href = '/admin?redirect=' + encodeURIComponent(window.location.pathname + window.location.search)
-    return
-  }
-
-  authPopup = popup
-  authPending.value = true
-
-  // nuxt-studio sets a non-httpOnly cookie "studio-session-check=true" after OAuth completes.
-  // Since cookies are shared across all same-origin windows, we can poll document.cookie
-  // from the main window to detect when the popup's auth finishes — no fetch needed.
-  const hadSession = document.cookie.includes('studio-session-check=')
-
-  authTimer = setInterval(() => {
-    const hasSession = document.cookie.includes('studio-session-check=')
-
-    if (!hadSession && hasSession) {
-      // Cookie just appeared — OAuth completed in the popup
-      clearInterval(authTimer)
-      authTimer = null
-      try { authPopup.close() } catch (_) {}
-      authPopup = null
-      authPending.value = false
-      window.location.reload()
-      return
-    }
-
-    if (!authPopup || authPopup.closed) {
-      // Popup was closed (manually or after auth)
-      clearInterval(authTimer)
-      authTimer = null
-      authPopup = null
-      authPending.value = false
-      window.location.reload()
-    }
-  }, 500)
+  window.location.href = '/admin'
 }
 </script>
 
@@ -256,17 +190,6 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
   position: fixed; top: 1rem; right: 1rem; z-index: 200;
   display: flex; align-items: center; gap: 0.5rem;
 }
-.top-bar-status {
-  font-size: 0.8rem; color: var(--text-subtle);
-  font-family: system-ui, sans-serif;
-}
-.top-bar-done {
-  color: #4ade80; font-size: 0.875rem; cursor: pointer;
-  background: var(--bg-card); border: 1px solid #166534;
-  border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
-}
-.top-bar-done:hover { border-color: #4ade80; }
-[data-theme="light"] .top-bar-done { color: #15803d; border-color: #bbf7d0; }
 .top-bar-login {
   color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);
