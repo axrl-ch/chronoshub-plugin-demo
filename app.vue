@@ -191,7 +191,7 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
   display: flex; align-items: center; gap: 0.5rem;
 }
 .top-bar-login {
-  color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
+  color: var(--text-muted); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
   text-decoration: none;
