@@ -7,6 +7,9 @@
       </div>
     </div>
 
+    <!-- TEMP DEBUG - remove after diagnosis -->
+    <pre v-if="debugLog" style="font-size:0.7rem; background:var(--bg-muted); border:1px solid var(--border); border-radius:6px; padding:0.75rem; margin-bottom:1rem; white-space:pre-wrap; word-break:break-all; color:var(--text-muted);">{{ debugLog }}</pre>
+
     <div v-if="!skills.length" class="empty-state">
       No skills yet. <a href="/studio/new-skill" class="empty-link">Add the first one →</a>
     </div>
@@ -104,4 +107,10 @@ const skills = Object.entries(skillFiles)
   .sort((a, b) => a.name.localeCompare(b.name))
 
 const expandedDesc = reactive({})
+
+const debugLog = ref('')
+onMounted(() => {
+  const raw = localStorage.getItem('_auth_debug_log')
+  if (raw) debugLog.value = raw
+})
 </script>
