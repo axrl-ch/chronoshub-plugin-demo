@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="top-bar">
-      <button class="top-bar-login" @click="openAuth">Authenticate →</button>
+      <button class="top-bar-login" @click="openAuth" :disabled="authPending">
+        {{ authPending ? 'Authenticating…' : 'Authenticate →' }}
+      </button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
       </button>
@@ -12,12 +14,22 @@
 
 <script setup>
 const isDark = ref(true)
+const authPending = ref(false)
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
 
+  // If this tab is the auth popup (window.name set by opener), signal completion and close
+  if (window.name === 'studio-auth') {
+    try {
+      localStorage.setItem('_studio_auth_done', String(Date.now()))
+    } catch (_) {}
+    window.close()
+    // Fallback if window.close() is blocked (e.g. not opened as popup)
+    setTimeout(() => { window.location.href = '/' }, 300)
+  }
 })
 
 function toggleTheme() {
@@ -28,12 +40,55 @@ function toggleTheme() {
 }
 
 function openAuth() {
-  const currentPath = window.location.pathname + window.location.search
-  window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
-  // Pass redirect param so nuxt-studio returns here after OAuth completes
-  window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`
-}
+  const SIGNAL_KEY = '_studio_auth_done'
 
+  // Save any in-progress form state before anything else
+  window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
+
+  // Clear any stale signal
+  localStorage.removeItem(SIGNAL_KEY)
+
+  authPending.value = true
+
+  // Listen for the popup to signal auth completion via localStorage
+  const onStorage = (e) => {
+    if (e.key === SIGNAL_KEY) {
+      window.removeEventListener('storage', onStorage)
+      localStorage.removeItem(SIGNAL_KEY)
+      authPending.value = false
+      // Reload so the session cookie is picked up; draft will be restored by form pages
+      window.location.reload()
+    }
+  }
+  window.addEventListener('storage', onStorage)
+
+  // Open /admin in a named popup — the name persists through the full OAuth redirect chain
+  // so when the popup finally lands back on our app, window.name === 'studio-auth' and
+  // onMounted above fires the signal.
+  const w = screen.width, h = screen.height
+  const popup = window.open(
+    '/admin',
+    'studio-auth',
+    `width=520,height=680,left=${Math.round((w - 520) / 2)},top=${Math.round((h - 680) / 2)}`
+  )
+
+  if (!popup || popup.closed) {
+    // Popup was blocked — fall back to same-tab navigation with the redirect param
+    window.removeEventListener('storage', onStorage)
+    authPending.value = false
+    window.location.href = '/admin?redirect=' + encodeURIComponent(window.location.pathname + window.location.search)
+    return
+  }
+
+  // Safety timeout: if the popup closes without completing auth, clean up
+  const checkClosed = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(checkClosed)
+      window.removeEventListener('storage', onStorage)
+      authPending.value = false
+    }
+  }, 1000)
+}
 </script>
 
 <style>
@@ -195,21 +250,14 @@ body { background: var(--bg); color: var(--text); margin: 0; transition: backgro
   position: fixed; top: 1rem; right: 1rem; z-index: 200;
   display: flex; align-items: center; gap: 0.5rem;
 }
-.top-bar-return {
-  color: #4ade80; font-size: 0.875rem; cursor: pointer;
-  background: var(--bg-card); border: 1px solid #166534;
-  border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
-  text-decoration: none; white-space: nowrap;
-}
-.top-bar-return:hover { border-color: #4ade80; }
-[data-theme="light"] .top-bar-return { color: #15803d; border-color: #bbf7d0; }
 .top-bar-login {
   color: var(--text-subtle); font-size: 0.875rem; cursor: pointer;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.75rem; font-family: system-ui, sans-serif;
   text-decoration: none;
 }
-.top-bar-login:hover { color: var(--text); border-color: var(--text-muted); }
+.top-bar-login:disabled { opacity: 0.5; cursor: default; }
+.top-bar-login:not(:disabled):hover { color: var(--text); border-color: var(--text-muted); }
 .theme-toggle {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 1rem;
