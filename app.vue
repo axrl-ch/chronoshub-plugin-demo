@@ -1,7 +1,6 @@
 <template>
   <div>
     <div class="top-bar">
-      <a v-if="returnUrl" :href="returnUrl" class="top-bar-return" @click="clearReturn">← Return to form</a>
       <button class="top-bar-login" @click="openAuth">Authenticate →</button>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
         {{ isDark ? '☀️' : '🌙' }}
@@ -13,23 +12,12 @@
 
 <script setup>
 const isDark = ref(true)
-const returnUrl = ref('')
 
 onMounted(() => {
   const saved = localStorage.getItem('theme')
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
 
-  const stored = sessionStorage.getItem('_auth_return_url')
-
-  // After auth, nuxt-studio drops us on '/'. Auto-redirect back to the form.
-  if (stored && window.location.pathname === '/') {
-    sessionStorage.removeItem('_auth_return_url')
-    window.location.replace(stored)
-    return
-  }
-
-  returnUrl.value = stored || ''
 })
 
 function toggleTheme() {
@@ -41,16 +29,11 @@ function toggleTheme() {
 
 function openAuth() {
   const currentPath = window.location.pathname + window.location.search
-  sessionStorage.setItem('_auth_return_url', currentPath)
-  returnUrl.value = currentPath
   window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
-  window.location.href = '/admin'
+  // Pass redirect param so nuxt-studio returns here after OAuth completes
+  window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`
 }
 
-function clearReturn() {
-  sessionStorage.removeItem('_auth_return_url')
-  returnUrl.value = ''
-}
 </script>
 
 <style>
