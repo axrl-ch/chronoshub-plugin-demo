@@ -20,7 +20,16 @@ onMounted(() => {
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
 
-  returnUrl.value = sessionStorage.getItem('_auth_return_url') || ''
+  const stored = sessionStorage.getItem('_auth_return_url')
+
+  // After auth, nuxt-studio drops us on '/'. Auto-redirect back to the form.
+  if (stored && window.location.pathname === '/') {
+    sessionStorage.removeItem('_auth_return_url')
+    window.location.replace(stored)
+    return
+  }
+
+  returnUrl.value = stored || ''
 })
 
 function toggleTheme() {
