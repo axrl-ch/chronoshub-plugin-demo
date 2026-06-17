@@ -20,16 +20,6 @@ onMounted(() => {
   const saved = localStorage.getItem('theme')
   isDark.value = saved ? saved === 'dark' : true
   document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
-
-  // If this tab is the auth popup (window.name set by opener), signal completion and close
-  if (window.name === 'studio-auth') {
-    try {
-      localStorage.setItem('_studio_auth_done', String(Date.now()))
-    } catch (_) {}
-    window.close()
-    // Fallback if window.close() is blocked (e.g. not opened as popup)
-    setTimeout(() => { window.location.href = '/' }, 300)
-  }
 })
 
 function toggleTheme() {
@@ -39,55 +29,83 @@ function toggleTheme() {
   localStorage.setItem('theme', theme)
 }
 
-function openAuth() {
-  const SIGNAL_KEY = '_studio_auth_done'
+async function isAuthenticated() {
+  try {
+    const r = await fetch('/__nuxt_studio/auth/session', { credentials: 'include' })
+    if (!r.ok) return false
+    const data = await r.json()
+    // Session exists when it has user identifying fields
+    return !!(data?.accessToken || data?.email || data?.provider)
+  } catch {
+    return false
+  }
+}
 
-  // Save any in-progress form state before anything else
+async function openAuth() {
+  // Save any in-progress form draft before anything else
   window.dispatchEvent(new CustomEvent('save-draft-for-auth'))
 
-  // Clear any stale signal
-  localStorage.removeItem(SIGNAL_KEY)
+  // Don't re-trigger if already waiting
+  if (authPending.value) return
+
+  // If already authenticated, nothing to do
+  if (await isAuthenticated()) return
 
   authPending.value = true
 
-  // Listen for the popup to signal auth completion via localStorage
-  const onStorage = (e) => {
-    if (e.key === SIGNAL_KEY) {
-      window.removeEventListener('storage', onStorage)
-      localStorage.removeItem(SIGNAL_KEY)
-      authPending.value = false
-      // Reload so the session cookie is picked up; draft will be restored by form pages
-      window.location.reload()
-    }
-  }
-  window.addEventListener('storage', onStorage)
-
-  // Open /admin in a named popup — the name persists through the full OAuth redirect chain
-  // so when the popup finally lands back on our app, window.name === 'studio-auth' and
-  // onMounted above fires the signal.
-  const w = screen.width, h = screen.height
   const popup = window.open(
     '/admin',
     'studio-auth',
-    `width=520,height=680,left=${Math.round((w - 520) / 2)},top=${Math.round((h - 680) / 2)}`
+    'width=520,height=680,left=' + Math.round((screen.width - 520) / 2) + ',top=' + Math.round((screen.height - 680) / 2)
   )
 
   if (!popup || popup.closed) {
-    // Popup was blocked — fall back to same-tab navigation with the redirect param
-    window.removeEventListener('storage', onStorage)
+    // Popup blocked — fall back to same-tab navigation
     authPending.value = false
     window.location.href = '/admin?redirect=' + encodeURIComponent(window.location.pathname + window.location.search)
     return
   }
 
-  // Safety timeout: if the popup closes without completing auth, clean up
-  const checkClosed = setInterval(() => {
-    if (popup.closed) {
-      clearInterval(checkClosed)
-      window.removeEventListener('storage', onStorage)
-      authPending.value = false
+  // Poll the session endpoint every second.
+  // The session cookie is domain-wide, so when the popup's OAuth completes
+  // the main window's requests will include it.
+  let timer = null
+  let popupClosedAt = null
+
+  function cleanup() {
+    clearInterval(timer)
+    authPending.value = false
+  }
+
+  timer = setInterval(async () => {
+    const popupGone = !popup || popup.closed
+
+    if (popupGone && !popupClosedAt) {
+      // Popup just closed — wait 800ms for the cookie to propagate, then do one final check
+      popupClosedAt = Date.now()
+      setTimeout(async () => {
+        if (await isAuthenticated()) {
+          cleanup()
+          window.location.reload()
+        } else {
+          cleanup()
+        }
+      }, 800)
+      clearInterval(timer)
+      return
     }
-  }, 1000)
+
+    if (await isAuthenticated()) {
+      cleanup()
+      try { popup.close() } catch (_) {}
+      window.location.reload()
+    }
+  }, 1200)
+
+  // Safety timeout after 5 minutes
+  setTimeout(() => {
+    if (authPending.value) cleanup()
+  }, 300_000)
 }
 </script>
 
