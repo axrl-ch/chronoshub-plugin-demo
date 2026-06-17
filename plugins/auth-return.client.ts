@@ -1,14 +1,15 @@
 // Runs before any component mounts — intercepts nuxt-studio's post-auth URL
 // and redirects back to wherever the user was before authenticating.
 export default defineNuxtPlugin(() => {
-  // Always log what we see so we can diagnose the flow
-  const log = {
+  // Accumulate log entries so we can see every plugin run in order
+  const entry = {
     path: window.location.pathname,
     search: window.location.search,
     returnUrl: localStorage.getItem('_auth_return_url'),
     time: new Date().toISOString()
   }
-  localStorage.setItem('_auth_debug_log', JSON.stringify(log))
+  const prev = JSON.parse(localStorage.getItem('_auth_debug_log') || '[]')
+  localStorage.setItem('_auth_debug_log', JSON.stringify([...prev, entry]))
 
   if (!window.location.pathname.startsWith('/__nuxt_studio/auth/')) return
 

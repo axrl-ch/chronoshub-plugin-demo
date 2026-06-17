@@ -111,6 +111,9 @@ const expandedDesc = reactive({})
 const debugLog = ref('')
 onMounted(() => {
   const raw = localStorage.getItem('_auth_debug_log')
-  if (raw) debugLog.value = raw
+  if (raw) {
+    try { debugLog.value = JSON.stringify(JSON.parse(raw), null, 2) }
+    catch { debugLog.value = raw }
+  }
 })
 </script>
